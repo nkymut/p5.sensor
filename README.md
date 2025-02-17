@@ -43,9 +43,9 @@ function draw() {
   text(`Orientation X: ${orientationX}`, 10, 200);
   text(`Orientation Y: ${orientationY}`, 10, 220);
   text(`Orientation Z: ${orientationZ}`, 10, 240);
-  text(`Absolute Orientation X: ${absoluteOrientationX}`, 10, 260);
-  text(`Absolute Orientation Y: ${absoluteOrientationY}`, 10, 280);
-  text(`Absolute Orientation Z: ${absoluteOrientationZ}`, 10, 300);
+  text(`Absolute Orientation X: ${absoluteOrientationX}`, 10, 260); //not supported by iOS
+  text(`Absolute Orientation Y: ${absoluteOrientationY}`, 10, 280); //not supported by iOS
+  text(`Absolute Orientation Z: ${absoluteOrientationZ}`, 10, 300); //not supported by iOS
 }
 ```
 
