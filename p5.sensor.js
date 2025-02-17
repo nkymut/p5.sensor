@@ -136,6 +136,31 @@ p5.prototype.checkSensorPermission = function() {
     }
 };
 
+
+/**
+ * Handles the sensor permission request.
+ * @method requestSensorAccess
+ * @private
+ */
+p5.prototype.requestSensorAccess = function() {
+    // Request permission from the user
+    DeviceOrientationEvent.requestPermission()
+      .then((response) => {
+        // If the user grants permission, set _sensorPermissionGranted to true
+        if (response == "granted") {
+          this._sensorPermissionGranted = true;
+        } else {
+          // If permission is denied, keep it false
+          this._sensorPermissionGranted = false;
+        }
+      })
+      .catch(console.error); // Log errors to the console
+  
+    // Remove the button after the user interacts with it
+    select("#sensorPermissionButton").remove();
+};
+
+
 /* p5 default motion variables
 let accelerationX;
 let accelerationY;
