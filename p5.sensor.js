@@ -144,17 +144,19 @@ p5.prototype.checkSensorPermission = function() {
  */
 p5.prototype.requestSensorAccess = function() {
     // Request permission from the user
-    DeviceOrientationEvent.requestPermission()
-      .then((response) => {
-        // If the user grants permission, set _sensorPermissionGranted to true
-        if (response == "granted") {
-          this._sensorPermissionGranted = true;
-        } else {
-          // If permission is denied, keep it false
-          this._sensorPermissionGranted = false;
-        }
-      })
-      .catch(console.error); // Log errors to the console
+    Promise.all([
+      DeviceOrientationEvent.requestPermission(),
+      DeviceMotionEvent.requestPermission()
+    ]).then(([orientationResponse, motionResponse]) => {
+      // If both permissions are granted, set _sensorPermissionGranted to true
+      if (orientationResponse === "granted" && motionResponse === "granted") {
+        this._sensorPermissionGranted = true;
+      } else {
+        // If either permission is denied, keep it false
+        this._sensorPermissionGranted = false;
+      }
+    })
+    .catch(console.error); // Log errors to the console
   
     // Remove the button after the user interacts with it
     select("#sensorPermissionButton").remove();
