@@ -1,9 +1,9 @@
 // Encapsulate variables within the p5 prototype
 /**
- * @property {boolean} _permissionGranted
- * @private
+ * @property {boolean} _sensorPermissionGranted - Indicates whether device motion/orientation sensor access is allowed
+ * @private 
  */
-p5.prototype._permissionGranted = false;
+p5.prototype._sensorPermissionGranted = false;
 
 /**
  * @property {Object|null} _accelerationWithGravity
@@ -123,13 +123,13 @@ p5.prototype.checkSensorPermission = function() {
                 .mousePressed(this.requestSensorAccess.bind(this));
             throw new Error("Sensor permission required");
         }).then(() => {
-            this._permissionGranted = true;
+            this._sensorPermissionGranted = true;
             window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
             window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
             window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
         });
     } else {
-        this._permissionGranted = true;
+        this._sensorPermissionGranted = true;
         window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
         window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
         window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
@@ -323,7 +323,7 @@ p5.prototype.updateMotion = function(event) {
  * @return {Object|null} An object containing acceleration data or null if unavailable.
  */
 p5.prototype.getAccelerationWithGravity = function() {
-  if (this._permissionGranted && this._accelerationWithGravity) {
+  if (this._sensorPermissionGranted && this._accelerationWithGravity) {
     return { ...this._accelerationWithGravity };
   } else {
     console.log("Accelerometer data not available.");
