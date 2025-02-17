@@ -160,13 +160,17 @@ p5.prototype.updateOrientation = function(event) {
     let orientY = event.gamma;   // y-axis rotation [-90,90]
     let orientZ = event.alpha;   // z-axis rotation [0,360)
     
-    // Adjust values based on screen orientation
-    if (window.orientation === 90) {
+    // Use p5.js deviceOrientation
+    if (deviceOrientation === 'landscape') {
       orientX = event.gamma;
       orientY = -event.beta;
-    } else if (window.orientation === -90) {
-      orientX = -event.gamma;
-      orientY = event.beta;
+    } else if (deviceOrientation === 'portrait') {
+      orientX = event.beta;
+      orientY = event.gamma;
+    } else {
+      // Default or unknown orientation
+      orientX = event.beta;
+      orientY = event.gamma;
     }
 
     this._orientation = {
