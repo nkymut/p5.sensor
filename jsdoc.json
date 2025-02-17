@@ -1,0 +1,11 @@
+{
+    "source": {
+      "include": ["p5.sensor.js"],
+      "includePattern": ".+\\.js(doc|x)?$",
+      "excludePattern": "(^|\\/|\\\\)_"
+    },
+    "opts": {
+      "destination": "./docs/",
+      "recurse": true
+    }
+  }

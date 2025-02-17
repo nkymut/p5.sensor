@@ -1,0 +1,22 @@
+{
+  "name": "p5.sensor",
+  "version": "1.0.0",
+  "description": "A p5.js library for accessing mobile device sensors.",
+  "main": "p5.sensor.js",
+  "scripts": {
+    "docs": "jsdoc -c jsdoc.json"
+  },
+  "keywords": [
+    "p5.js",
+    "sensor",
+    "acceleration",
+    "orientation",
+    "gravity",
+    "mobile"
+  ],
+  "author": "Yuta Nakayama",
+  "license": "MIT",
+  "devDependencies": {
+    "jsdoc": "^3.6.7"
+  }
+} 
