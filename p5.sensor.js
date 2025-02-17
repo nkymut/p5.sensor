@@ -169,9 +169,9 @@ p5.prototype.updateMotion = function(event) {
       y: accWithGravity.y, 
       z: accWithGravity.z
     };
-    this.gravityX = accWithGravity.x;
-    this.gravityY = accWithGravity.y;
-    this.gravityZ = accWithGravity.z;
+    this._setProperty('gravityX', accWithGravity.x);
+    this._setProperty('gravityY', accWithGravity.y);
+    this._setProperty('gravityZ', accWithGravity.z);
   } else {
     this._accelerationWithGravity = null;
   }
@@ -211,9 +211,9 @@ p5.prototype.updateMotion = function(event) {
       x: orient.beta,
       y: orient.gamma
     };
-    this.orientationX = orient.alpha;
-    this.orientationY = orient.beta;
-    this.orientationZ = orient.gamma;
+    this._setProperty('orientationX', orient.alpha);
+    this._setProperty('orientationY', orient.beta);
+    this._setProperty('orientationZ', orient.gamma);
     if (event.webkitCompassHeading !== undefined) {
         heading = event.webkitCompassHeading;
     } else if (orient.alpha !== null) {
@@ -234,9 +234,9 @@ p5.prototype.updateMotion = function(event) {
       x: absOrient.beta,
       y: absOrient.gamma
     };
-    this.absoluteOrientationX = absOrient.alpha;
-    this.absoluteOrientationY = absOrient.beta;
-    this.absoluteOrientationZ = absOrient.gamma;
+    this._setProperty('absoluteOrientationX', absOrient.alpha);
+    this._setProperty('absoluteOrientationY', absOrient.beta);
+    this._setProperty('absoluteOrientationZ', absOrient.gamma);
   } else {
     this._absoluteOrientation = null;
   }
@@ -288,8 +288,12 @@ p5.prototype.requestGeolocation = function() {
  * @param {Position} position - The position object containing latitude and longitude.
  */
 p5.prototype.getGeolocation = function(position) {
-    this.lat = position.coords.latitude;
-    this.lon = position.coords.longitude;
+    this._setProperty('latitude', position.coords.latitude);
+    this._setProperty('longitude', position.coords.longitude);
+    return {
+        latitude: position.coords.latitude,
+        longitude: position.coords.longitude
+    };
 };
 
 /**
@@ -313,7 +317,7 @@ p5.prototype.showGeolocationError = function(error) {
             errorMsg = "An unknown error occurred.";
             break;
     }
-    alert(errorMsg);
+    console.error(errorMsg);
 };
 
 /*
@@ -375,7 +379,7 @@ p5.prototype.captureBrightness = function() {
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
     let b = this._video.pixels[index + 2];
-    this._brightnessLevel = int((r + g + b) / 3); // Compute grayscale brightness
+    this._setProperty('_brightnessLevel', (r + g + b) / 3); // Compute grayscale brightness
 
     return this._brightnessLevel;
 };
@@ -391,7 +395,7 @@ p5.prototype.updateBrightness = function() {
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
     let b = this._video.pixels[index + 2];
-    this._brightnessLevel = (r + g + b) / 3; // Compute grayscale brightness
+    this._setProperty('_brightnessLevel', (r + g + b) / 3); // Compute grayscale brightness
 
     return this._brightnessLevel;
 };
