@@ -124,14 +124,14 @@ p5.prototype.checkSensorPermission = function() {
             throw new Error("Sensor permission required");
         }).then(() => {
             this._permissionGranted = true;
-            window.addEventListener("deviceorientation", this.updateMotion.bind(this), true);
-            window.addEventListener("deviceorientationabsolute", this.updateMotion.bind(this), true);
+            window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
+            window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
             window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
         });
     } else {
         this._permissionGranted = true;
-        window.addEventListener("deviceorientation", this.updateMotion.bind(this), true);
-        window.addEventListener("deviceorientationabsolute", this.updateMotion.bind(this), true);
+        window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
+        window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
         window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
     }
 };
@@ -148,105 +148,172 @@ let rotationZ;
 let debugMotion = "";
 
 /**
+ * Updates orientation data from device sensors.
+ * @method updateOrientation
+ * @param {DeviceOrientationEvent} event - The orientation event containing sensor data.
+ * @private
+ */
+p5.prototype.updateOrientation = function(event) {
+  // Handle regular DeviceOrientationEvent
+  if (!event.absolute) {
+    let orientX = event.beta;    // x-axis rotation [-180,180]
+    let orientY = event.gamma;   // y-axis rotation [-90,90]
+    let orientZ = event.alpha;   // z-axis rotation [0,360)
+    
+    // Adjust values based on screen orientation
+    if (window.orientation === 90) {
+      orientX = event.gamma;
+      orientY = -event.beta;
+    } else if (window.orientation === -90) {
+      orientX = -event.gamma;
+      orientY = event.beta;
+    }
+
+    this._orientation = {
+      x: orientX,
+      y: orientY,
+      z: orientZ,
+      alpha: orientZ,
+      beta: orientX,
+      gamma: orientY
+    };
+    
+    this._setProperty('orientationX', orientX);
+    this._setProperty('orientationY', orientY);
+    this._setProperty('orientationZ', orientZ);
+  }
+  // Handle Absolute Orientation
+  else {
+    let absOrientX = event.beta;
+    let absOrientY = event.gamma;
+    let absOrientZ = event.alpha;
+    
+    // Adjust values based on screen orientation
+    if (window.orientation === 90) {
+      absOrientX = event.gamma;
+      absOrientY = -event.beta;
+    } else if (window.orientation === -90) {
+      absOrientX = -event.gamma;
+      absOrientY = event.beta;
+    }
+
+    this._absoluteOrientation = {
+      x: absOrientX,
+      y: absOrientY,
+      z: absOrientZ,
+      alpha: absOrientZ,
+      beta: absOrientX,
+      gamma: absOrientY
+    };
+    
+    this._setProperty('absoluteOrientationX', absOrientX);
+    this._setProperty('absoluteOrientationY', absOrientY);
+    this._setProperty('absoluteOrientationZ', absOrientZ);
+
+    // Handle compass heading
+    if (event.webkitCompassHeading !== undefined) {
+      this._setProperty('heading', event.webkitCompassHeading);
+    } else if (event.alpha !== null) {
+      // Convert alpha to compass heading (alpha is measured clockwise, heading counter-clockwise)
+      let heading = (360 - event.alpha) % 360;
+      this._setProperty('heading', heading);
+    }
+  }
+};
+
+/**
  * Updates motion data from device sensors.
  * @method updateMotion
  * @param {Event} event - The motion event containing sensor data.
  * @private
  */
 p5.prototype.updateMotion = function(event) {
-  const accWithGravity = event.accelerationIncludingGravity;
-  const acc = event.acceleration;
-  const rot = event.rotationRate;
-  const orient = event.orientation;
-  const absOrient = event.absolute;
+  // Handle DeviceMotionEvent
+  if (event instanceof DeviceMotionEvent) {
+    const accWithGravity = event.accelerationIncludingGravity;
+    const acc = event.acceleration;
+    const rot = event.rotationRate;
 
-  debugMotion = JSON.stringify(event);
+    // Handle acceleration including gravity
+    if (accWithGravity) {
+      // Adjust for landscape mode if needed
+      let gravityX = accWithGravity.x;
+      let gravityY = accWithGravity.y;
+      
+      // Adjust values based on screen orientation
+      if (window.orientation === 90) {
+        gravityX = -accWithGravity.y;
+        gravityY = accWithGravity.x;
+      } else if (window.orientation === -90) {
+        gravityX = accWithGravity.y;
+        gravityY = -accWithGravity.x;
+      }
 
-  // Handle acceleration including gravity
-  if (accWithGravity) {
-    this._accelerationWithGravity = {
-      x: accWithGravity.x,
-      y: accWithGravity.y, 
-      z: accWithGravity.z
-    };
-    this._setProperty('gravityX', accWithGravity.x);
-    this._setProperty('gravityY', accWithGravity.y);
-    this._setProperty('gravityZ', accWithGravity.z);
-  } else {
-    this._accelerationWithGravity = null;
-  }
-
-  // Handle pure acceleration
-  if (acc) {
-    this._acceleration = {
-      x: acc.x,
-      y: acc.y,
-      z: acc.z
-    };
-  } else {
-    this._acceleration = null;
-  }
-
-  // Handle rotation rate
-  if (rot) {
-    this._rotation = {
-      alpha: rot.alpha, // rotation around z-axis
-      beta: rot.beta,   // rotation around x-axis
-      gamma: rot.gamma,  // rotation around y-axis
-      z: rot.alpha,
-      x: rot.beta,
-      y: rot.gamma
-    };
-  } else {
-    this._rotation = null;
-  }
-
-  // Handle device orientation
-  if (orient) {
-    this._orientation = {
-      alpha: orient.alpha,
-      beta: orient.beta,
-      gamma: orient.gamma,
-      z: orient.alpha,
-      x: orient.beta,
-      y: orient.gamma
-    };
-    this._setProperty('orientationX', orient.alpha);
-    this._setProperty('orientationY', orient.beta);
-    this._setProperty('orientationZ', orient.gamma);
-    if (event.webkitCompassHeading !== undefined) {
-        heading = event.webkitCompassHeading;
-    } else if (orient.alpha !== null) {
-        // Note: event.alpha may not be referenced to true north on all devices.
-        heading = orient.alpha;
+      this._accelerationWithGravity = {
+        x: gravityX,
+        y: gravityY, 
+        z: accWithGravity.z
+      };
+      this._setProperty('gravityX', gravityX);
+      this._setProperty('gravityY', gravityY);
+      this._setProperty('gravityZ', accWithGravity.z);
     }
-  } else {
-    this._orientation = null;
+
+    // Handle pure acceleration
+    if (acc) {
+      let accelX = acc.x;
+      let accelY = acc.y;
+      
+      // Adjust values based on screen orientation
+      if (window.orientation === 90) {
+        accelX = -acc.y;
+        accelY = acc.x;
+      } else if (window.orientation === -90) {
+        accelX = acc.y;
+        accelY = -acc.x;
+      }
+
+      this._acceleration = {
+        x: accelX,
+        y: accelY,
+        z: acc.z
+      };
+    }
+
+    // Handle rotation rate
+    if (rot) {
+      let rotX = rot.beta;   // rotation around x-axis
+      let rotY = rot.gamma;  // rotation around y-axis
+      let rotZ = rot.alpha;  // rotation around z-axis
+      
+      // Adjust values based on screen orientation
+      if (window.orientation === 90) {
+        rotX = rot.gamma;
+        rotY = -rot.beta;
+      } else if (window.orientation === -90) {
+        rotX = -rot.gamma;
+        rotY = rot.beta;
+      }
+
+      this._rotation = {
+        x: rotX,
+        y: rotY,
+        z: rotZ,
+        alpha: rotZ,
+        beta: rotX,
+        gamma: rotY
+      };
+    }
   }
 
-  // Handle absolute orientation
-  if (absOrient) {
-    this._absoluteOrientation = {
-      alpha: absOrient.alpha,
-      beta: absOrient.beta,
-      gamma: absOrient.gamma,
-      z: absOrient.alpha,
-      x: absOrient.beta,
-      y: absOrient.gamma
-    };
-    this._setProperty('absoluteOrientationX', absOrient.alpha);
-    this._setProperty('absoluteOrientationY', absOrient.beta);
-    this._setProperty('absoluteOrientationZ', absOrient.gamma);
-  } else {
-    this._absoluteOrientation = null;
-  }
 
   debugMotion = JSON.stringify({
     accelerationWithGravity: this._accelerationWithGravity,
     acceleration: this._acceleration,
     rotation: this._rotation,
     orientation: this._orientation,
-    absoluteOrientation: this._absoluteOrientation
+    absoluteOrientation: this._absoluteOrientation,
+    screenOrientation: window.orientation
   });
 };
 
