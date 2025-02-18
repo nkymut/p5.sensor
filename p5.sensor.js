@@ -356,6 +356,7 @@ p5.prototype.debugMotion = function() {
  * Retrieves the current acceleration data including gravity.
  * @method getAccelerationWithGravity
  * @return {Object|null} An object containing acceleration data or null if unavailable.
+ * @alias getGravity
  */
 p5.prototype.getAccelerationWithGravity = function() {
   if (this._sensorPermissionGranted && this._accelerationWithGravity) {
@@ -365,6 +366,9 @@ p5.prototype.getAccelerationWithGravity = function() {
     return null;
   }
 };
+
+
+p5.prototype.getGravity = p5.prototype.getAccelerationWithGravity;
 
 /**
  * Retrieves the current acceleration data.
@@ -444,6 +448,7 @@ p5.prototype.requestGeolocation = function() {
  * Callback function to handle successful geolocation retrieval.
  * @method getGeolocation
  * @param {Position} position - The position object containing latitude and longitude.
+ * @return {Object} An object containing latitude and longitude.
  */
 p5.prototype.getGeolocation = function(position) {
     this._setProperty('latitude', position.coords.latitude);
@@ -504,6 +509,7 @@ p5.prototype._brightnessLevel = 0;
  * Captures the color at the center of the video feed.
  * @method captureColor
  * @return {Array} An array containing RGB values.
+ * @alias getColor
  */
 p5.prototype.captureColor = function() {
     this._video.loadPixels();
@@ -521,6 +527,7 @@ p5.prototype.captureColor = function() {
  * Captures the light level from the video feed.
  * @method captureLightLevel
  * @return {number} The brightness level.
+ * @alias getLightLevel
  */
 p5.prototype.captureLightLevel = function() {
     return this.captureBrightness();
@@ -530,6 +537,7 @@ p5.prototype.captureLightLevel = function() {
  * Captures the brightness level from the video feed.
  * @method captureBrightness
  * @return {number} The brightness level.
+ * @alias getBrightness
  */
 p5.prototype.captureBrightness = function() {
     this._video.loadPixels();
@@ -546,6 +554,7 @@ p5.prototype.captureBrightness = function() {
  * Updates the brightness level from the video feed.
  * @method updateBrightness
  * @return {number} The updated brightness level.
+ * @alias updateBrightness
  */
 p5.prototype.updateBrightness = function() {
     this._video.loadPixels();
@@ -612,7 +621,7 @@ p5.prototype.initializeCamera = function(selectCamera = "front") {
  */
 p5.prototype.toggleCamera = function() {
     this.isFrontCamera = !this.isFrontCamera;
-    this.initializeCamera();
+    this.initializeCamera(this.isFrontCamera ? "front" : "back");
 };
 
 /*
