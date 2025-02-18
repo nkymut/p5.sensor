@@ -172,8 +172,6 @@ let rotationY;
 let rotationZ;
 */
 
-let debugMotion = "";
-
 /**
  * Updates orientation data from device sensors.
  * @method updateOrientation
@@ -220,10 +218,10 @@ p5.prototype.updateOrientation = function(event) {
     let absOrientZ = event.alpha;
     
     // Adjust values based on screen orientation
-    if (window.orientation === 90) {
+    if (deviceOrientation === 'landscape') {
       absOrientX = event.gamma;
       absOrientY = -event.beta;
-    } else if (window.orientation === -90) {
+    } else if (deviceOrientation === 'portrait') {
       absOrientX = -event.gamma;
       absOrientY = event.beta;
     }
@@ -272,10 +270,10 @@ p5.prototype.updateMotion = function(event) {
       let gravityY = accWithGravity.y;
       
       // Adjust values based on screen orientation
-      if (window.orientation === 90) {
+      if (deviceOrientation === 'landscape') {
         gravityX = -accWithGravity.y;
         gravityY = accWithGravity.x;
-      } else if (window.orientation === -90) {
+      } else if (deviceOrientation === 'portrait') {
         gravityX = accWithGravity.y;
         gravityY = -accWithGravity.x;
       }
@@ -296,10 +294,10 @@ p5.prototype.updateMotion = function(event) {
       let accelY = acc.y;
       
       // Adjust values based on screen orientation
-      if (window.orientation === 90) {
+      if (deviceOrientation === 'landscape') {
         accelX = -acc.y;
         accelY = acc.x;
-      } else if (window.orientation === -90) {
+      } else if (deviceOrientation === 'portrait') {
         accelX = acc.y;
         accelY = -acc.x;
       }
@@ -318,10 +316,10 @@ p5.prototype.updateMotion = function(event) {
       let rotZ = rot.alpha;  // rotation around z-axis
       
       // Adjust values based on screen orientation
-      if (window.orientation === 90) {
+      if (deviceOrientation === 'landscape') {
         rotX = rot.gamma;
         rotY = -rot.beta;
-      } else if (window.orientation === -90) {
+      } else if (deviceOrientation === 'portrait') {
         rotX = -rot.gamma;
         rotY = rot.beta;
       }
@@ -336,15 +334,21 @@ p5.prototype.updateMotion = function(event) {
       };
     }
   }
+};
 
-
-  debugMotion = JSON.stringify({
+/**
+ * Returns a JSON string containing debug information about motion sensor data.
+ * @method debugMotion
+ * @return {string} JSON string with motion sensor data
+ */
+p5.prototype.debugMotion = function() {
+  return JSON.stringify({
     accelerationWithGravity: this._accelerationWithGravity,
-    acceleration: this._acceleration,
+    acceleration: this._acceleration, 
     rotation: this._rotation,
     orientation: this._orientation,
     absoluteOrientation: this._absoluteOrientation,
-    screenOrientation: window.orientation
+    screenOrientation: deviceOrientation
   });
 };
 
@@ -361,6 +365,62 @@ p5.prototype.getAccelerationWithGravity = function() {
     return null;
   }
 };
+
+/**
+ * Retrieves the current acceleration data.
+ * @method getAcceleration
+ * @return {Object|null} An object containing acceleration data or null if unavailable.
+ */
+p5.prototype.getAcceleration = function() {
+  if (this._sensorPermissionGranted && this._acceleration) {
+    return { ...this._acceleration };
+  } else {
+    console.log("Accelerometer data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current rotation data.
+ * @method getRotation
+ * @return {Object|null} An object containing rotation data or null if unavailable.
+ */
+p5.prototype.getRotation = function() {
+  if (this._sensorPermissionGranted && this._rotation) {
+    return { ...this._rotation };
+  } else {
+    console.log("Rotation data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current orientation data.
+ * @method getOrientation
+ * @return {Object|null} An object containing orientation data or null if unavailable.
+ */
+p5.prototype.getOrientation = function() {
+  if (this._sensorPermissionGranted && this._orientation) {
+    return { ...this._orientation };
+  } else {
+    console.log("Orientation data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current absolute orientation data.
+ * @method getAbsoluteOrientation
+ * @return {Object|null} An object containing absolute orientation data or null if unavailable.
+ */
+p5.prototype.getAbsoluteOrientation = function() {
+  if (this._sensorPermissionGranted && this._absoluteOrientation) {
+    return { ...this._absoluteOrientation };
+  } else {
+    console.log("Absolute orientation data not available.");
+    return null;
+  }
+};  
 
 /*
 Geolocation API
