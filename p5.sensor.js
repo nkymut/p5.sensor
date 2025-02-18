@@ -642,3 +642,31 @@ p5.prototype.setupSoundSensor = function() {
 p5.prototype.captureSoundLevel = function() {
     return this._mic.getLevel();
 };
+
+/**
+ * Gets the current color from the video feed.
+ * @method getColor
+ * @return {Array} An array containing RGB values.
+ */
+p5.prototype.getColor = p5.prototype.captureColor;
+
+/**
+ * Gets the current light level from the video feed.
+ * @method getLightLevel
+ * @return {number} The brightness level.
+ */
+p5.prototype.getLightLevel = p5.prototype.captureLightLevel;
+
+/**
+ * Gets the current brightness level from the video feed.
+ * @method getBrightness
+ * @return {number} The brightness level.
+ */
+p5.prototype.getBrightness = p5.prototype.captureBrightness;
+
+/**
+ * Gets the current sound level from the microphone.
+ * @method getSoundLevel
+ * @return {number} The current sound level.
+ */
+p5.prototype.getSoundLevel = p5.prototype.captureSoundLevel;
