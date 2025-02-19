@@ -121,7 +121,7 @@ p5.prototype.checkSensorPermission = function() {
                 .style("font-size", "24px")
                 .center()
                 .mousePressed(this.requestSensorAccess.bind(this));
-            throw new Error("Sensor permission required");
+            //throw new Error("Sensor permission required");
         }).then(() => {
             this._sensorPermissionGranted = true;
             window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
