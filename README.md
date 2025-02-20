@@ -55,10 +55,11 @@ Request the current geolocation of the device:
 
 ```javascript
 function setup() {
-  requestGeolocation();
+  let interval = 10000;
+  requestGeolocation(handleGeolocation, interval);
 }
 
-function getGeolocation(position) {
+function handleGeolocation(position) {
   console.log(`Latitude: ${position.coords.latitude}`);
   console.log(`Longitude: ${position.coords.longitude}`);
 }

@@ -434,30 +434,64 @@ Geolocation API
  * Requests the current geolocation of the device.
  * @method requestGeolocation
  */
-p5.prototype.requestGeolocation = function() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.getGeolocation.bind(this), this.showGeolocationError.bind(this), {
-            enableHighAccuracy: true,
-        });
-    } else {
+p5.prototype.requestGeolocation = function(handleGeolocation, interval = 0) {
+    if (!navigator.geolocation) {
         alert("Geolocation is not supported by this browser.");
+        return;
+    }
+
+    const options = {
+        enableHighAccuracy: true
+    };
+
+    const successCallback = (position) => {
+        const geolocationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        };
+        this._setProperty('latitude', position.coords.latitude);
+        this._setProperty('longitude', position.coords.longitude);
+        handleGeolocation(geolocationData);
+    };
+
+    if (interval > 0) {
+        // Set up recurring geolocation updates
+        const watchId = navigator.geolocation.watchPosition(
+            successCallback,
+            this.showGeolocationError.bind(this),
+            options
+        );
+        // Store watch ID to allow clearing later
+        this._geolocationWatchId = watchId;
+
+        // Set timeout to clear watch after interval
+        setTimeout(() => {
+            navigator.geolocation.clearWatch(watchId);
+        }, interval);
+    } else {
+        // One-time geolocation request
+        navigator.geolocation.getCurrentPosition(
+            successCallback,
+            this.showGeolocationError.bind(this),
+            options
+        );
     }
 };
 
-/**
- * Callback function to handle successful geolocation retrieval.
- * @method getGeolocation
- * @param {Position} position - The position object containing latitude and longitude.
- * @return {Object} An object containing latitude and longitude.
- */
-p5.prototype.getGeolocation = function(position) {
-    this._setProperty('latitude', position.coords.latitude);
-    this._setProperty('longitude', position.coords.longitude);
-    return {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude
-    };
-};
+// /**
+//  * Callback function to handle successful geolocation retrieval.
+//  * @method getGeolocation
+//  * @param {Position} position - The position object containing latitude and longitude.
+//  * @return {Object} An object containing latitude and longitude.
+//  */
+// p5.prototype.getGeolocation = function(position) {
+//     this._setProperty('latitude', position.coords.latitude);
+//     this._setProperty('longitude', position.coords.longitude);
+//     return {
+//         latitude: position.coords.latitude,
+//         longitude: position.coords.longitude
+//     };
+// };
 
 /**
  * Callback function to handle geolocation errors.
