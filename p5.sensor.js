@@ -594,7 +594,7 @@ p5.prototype.captureColor = function() {
  * @alias getLightLevel
  */
 p5.prototype.captureLightLevel = function() {
-    return this.captureBrightness();
+    return this.updateBrightness();
 };
 
 /**
@@ -603,7 +603,9 @@ p5.prototype.captureLightLevel = function() {
  * @return {number} The brightness level.
  * @alias getBrightness
  */
-p5.prototype.captureBrightness = p5.prototype.updateBrightness;
+p5.prototype.captureBrightness = function() {
+  return this.updateBrightness();
+};
 
 /**
  * Updates the brightness level from the video feed.
