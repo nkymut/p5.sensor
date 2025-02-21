@@ -622,6 +622,8 @@ p5.prototype.setupCamera = function(selectCamera = "front") {
     this._video.loadPixels();
 
     this._video.hide();
+
+    this._setProperty('_video', this._video);
 };
 
 /**
