@@ -27,7 +27,14 @@ p5.prototype.setupTouchSensor = function() {
   document.addEventListener("selectstart", (event) => event.preventDefault());
 }
 
-
+/**
+ * Checks if the sensor permission has been granted.
+ * @method isSensorPermissionGranted
+ * @return {boolean} True if the sensor permission is granted, false otherwise.
+ */
+p5.prototype.isSensorPermissionGranted = function() {
+  return this._sensorPermissionGranted;
+};
 
 /**
  * @property {boolean} _sensorPermissionGranted - Indicates whether device motion/orientation sensor access is allowed
