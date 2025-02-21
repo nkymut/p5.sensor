@@ -546,7 +546,7 @@ p5.prototype._brightnessLevel = 0;
  * @alias getColor
  */
 p5.prototype.captureColor = function() {
-    this._video.loadPixels();
+    //this._video.loadPixels();
     let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
@@ -574,7 +574,7 @@ p5.prototype.captureLightLevel = function() {
  * @alias getBrightness
  */
 p5.prototype.captureBrightness = function() {
-    this._video.loadPixels();
+    //this._video.loadPixels();
     let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
@@ -591,7 +591,7 @@ p5.prototype.captureBrightness = function() {
  * @alias updateBrightness
  */
 p5.prototype.updateBrightness = function() {
-    this._video.loadPixels();
+    //this._video.loadPixels();
     let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
@@ -619,6 +619,8 @@ p5.prototype.setupCamera = function(selectCamera = "front") {
 
     this.video = createCapture(constraints);
     this.video.size(160, 120);
+    this.video.loadPixels();
+
     this.video.hide();
 };
 
