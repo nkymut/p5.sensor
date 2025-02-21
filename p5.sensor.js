@@ -574,6 +574,7 @@ p5.prototype.captureLightLevel = function() {
  * @alias getBrightness
  */
 p5.prototype.captureBrightness = function() {
+    console.log(this._video);
     this._video.loadPixels();
     let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
     let r = this._video.pixels[index];
@@ -624,6 +625,7 @@ p5.prototype.setupCamera = function(selectCamera = "front") {
     this._video.hide();
 
     this._setProperty('_video', this._video);
+    
 };
 
 /**
