@@ -1,4 +1,34 @@
 // Encapsulate variables within the p5 prototype
+
+//Touch
+
+/**
+ * Sets up touch event handling by disabling default touch behaviors and preventing unwanted interactions.
+ * This includes disabling text selection, context menus, and other default touch gestures.
+ * @method setupTouchSensor
+ * @example
+ * function setup() {
+ *   setupTouchSensor();
+ * }
+ */
+
+p5.prototype.setupTouchSensor = function() {
+  // Disable touch gestures like zooming and panning
+  // Allow touch actions on buttons but disable elsewhere
+  // document.body.style.touchAction = "manipulation";
+
+  // Prevent text selection on the page
+  document.body.style.userSelect = "none";
+
+  // Prevent the context menu (right-click) from appearing anywhere
+  document.addEventListener("contextmenu", (event) => event.preventDefault());
+
+  // Prevent text selection
+  document.addEventListener("selectstart", (event) => event.preventDefault());
+}
+
+
+
 /**
  * @property {boolean} _sensorPermissionGranted - Indicates whether device motion/orientation sensor access is allowed
  * @private 
@@ -573,17 +603,7 @@ p5.prototype.captureLightLevel = function() {
  * @return {number} The brightness level.
  * @alias getBrightness
  */
-p5.prototype.captureBrightness = function() {
-    //console.log(this._video);
-    this._video.loadPixels();
-    let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
-    let r = this._video.pixels[index];
-    let g = this._video.pixels[index + 1];
-    let b = this._video.pixels[index + 2];
-    this._setProperty('_brightnessLevel', (r + g + b) / 3); // Compute grayscale brightness
-
-    return this._brightnessLevel;
-};
+p5.prototype.captureBrightness = p5.prototype.updateBrightness;
 
 /**
  * Updates the brightness level from the video feed.
