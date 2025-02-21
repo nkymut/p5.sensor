@@ -607,8 +607,8 @@ p5.prototype.updateBrightness = function() {
  * @param {string} [selectCamera="front"] - The camera orientation, either "front" or "back".
  */
 p5.prototype.setupCamera = function(selectCamera = "front") {
-    if (this.video) {
-        this.video.remove();
+    if (this._video) {
+        this._video.remove();
     }
 
     this.isFrontCamera = selectCamera === "front";
@@ -617,11 +617,11 @@ p5.prototype.setupCamera = function(selectCamera = "front") {
         ? { video: { facingMode: "user" }, audio: false }
         : { video: { facingMode: "environment" }, audio: false };
 
-    this.video = createCapture(constraints);
-    this.video.size(160, 120);
-    this.video.loadPixels();
+    this._video = createCapture(constraints);
+    this._video.size(160, 120);
+    this._video.loadPixels();
 
-    this.video.hide();
+    this._video.hide();
 };
 
 /**
