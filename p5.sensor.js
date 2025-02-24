@@ -12,20 +12,76 @@
  * }
  */
 
-p5.prototype.setupTouchSensor = function() {
+p5.prototype.setupTouchSensor = function(options = {}) {
+  // Set default options
+  const defaults = {
+    disableGestures: false,
+    disableSelection: true, 
+    disableContextMenu: true,
+    disableHighlighting: true
+  };
+
+  // Merge provided options with defaults
+  const settings = {...defaults, ...options};
+
   // Disable touch gestures like zooming and panning
-  // Allow touch actions on buttons but disable elsewhere
-  // document.body.style.touchAction = "manipulation";
+  if (settings.disableGestures) {
+    this.disableTouchGestures();
+  }
 
   // Prevent text selection on the page
-  document.body.style.userSelect = "none";
+  if (settings.disableSelection) {
+    this.disableTextSelection();
+  }
 
   // Prevent the context menu (right-click) from appearing anywhere
-  document.addEventListener("contextmenu", (event) => event.preventDefault());
+  if (settings.disableContextMenu) {
+    this.disableContextMenu();
+  }
 
   // Prevent text selection
-  document.addEventListener("selectstart", (event) => event.preventDefault());
+  if (settings.disableHighlighting) {
+    this.disableTextHighlighting();
+  }
+
+  
 }
+
+/**
+ * Disables touch gestures like zooming and panning while allowing touch actions on buttons
+ * @method disableTouchGestures
+ * @private
+ */
+p5.prototype.disableTouchGestures = function() {
+  document.body.style.touchAction = "manipulation";
+};
+
+/**
+ * Prevents text selection on the page
+ * @method disableTextSelection
+ * @private
+ */
+p5.prototype.disableTextSelection = function() {
+  document.body.style.userSelect = "none";
+};
+
+/**
+ * Prevents the context menu (right-click) from appearing
+ * @method disableContextMenu
+ * @private
+ */
+p5.prototype.disableContextMenu = function() {
+  document.addEventListener("contextmenu", (event) => event.preventDefault());
+};
+
+/**
+ * Prevents text highlighting/selection
+ * @method disableTextHighlighting
+ * @private
+ */
+p5.prototype.disableTextHighlighting = function() {
+  document.addEventListener("selectstart", (event) => event.preventDefault());
+};
 
 /**
  * Checks if the sensor permission has been granted.
