@@ -764,8 +764,10 @@ p5.prototype._mic = null;
  * @method setupSoundSensor
  */
 p5.prototype.setupSoundSensor = function() {
-    this._mic = new p5.AudioIn();
-    this._mic.start();
+    this.userStartAudio().then(() => {
+        this._mic = new p5.AudioIn();
+        this._mic.start();
+    });
 };
 
 /**
