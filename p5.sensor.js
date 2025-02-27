@@ -758,6 +758,7 @@ Sound Sensor
  * @private
  */
 p5.prototype._mic = null;
+p5.prototype._micStarted = false;
 
 /**
  * Sets up the sound sensor.
@@ -767,7 +768,17 @@ p5.prototype.setupSoundSensor = function() {
     this.userStartAudio().then(() => {
         this._mic = new p5.AudioIn();
         this._mic.start();
+        this._micStarted = true;
     });
+};
+
+/**
+ * Checks if the sound sensor is started.
+ * @method isSoundSensorStarted
+ * @return {boolean} True if the sound sensor is started, false otherwise.
+ */
+p5.prototype.isSoundSensorStarted = function() {
+    return this._micStarted;
 };
 
 /**
