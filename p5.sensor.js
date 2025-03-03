@@ -89,6 +89,14 @@ p5.prototype.disableTextHighlighting = function() {
  * @private
  */
 p5.prototype.disableLongPressZoom = function() {
+
+  const elements = [select('html'), select('body')];
+  for (let el of elements) {
+    el.style('-webkit-user-select', 'none')
+      .style('-webkit-touch-callout', 'none')
+      .style('user-select', 'none');
+  }
+
   document.addEventListener('touchstart', function (event) {
     // Call your custom function
     touchStarted(event);
