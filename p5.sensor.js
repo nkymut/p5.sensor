@@ -18,7 +18,8 @@ p5.prototype.setupTouchSensor = function(options = {}) {
     disableGestures: false,
     disableSelection: true, 
     disableContextMenu: true,
-    disableHighlighting: true
+    disableHighlighting: true,
+    disableLongPressZoom: true
   };
 
   // Merge provided options with defaults
@@ -42,6 +43,10 @@ p5.prototype.setupTouchSensor = function(options = {}) {
   // Prevent text selection
   if (settings.disableHighlighting) {
     this.disableTextHighlighting();
+  }
+
+  if (settings.disableLongPressZoom){
+    this.disableLongPressZoom();
   }
 
   
@@ -93,7 +98,7 @@ p5.prototype.disableLongPressZoom = function() {
   document.body.style.userSelect = 'none';            // Standard
   document.body.style.webkitUserSelect = 'none';      // iOS/Chrome on iOS
   document.body.style.webkitTouchCallout = 'none';    // iOS callout (copy/paste)
-  
+
   document.addEventListener('touchstart', function (event) {
     // Call your custom function
     touchStarted(event);
