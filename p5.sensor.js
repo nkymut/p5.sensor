@@ -84,6 +84,19 @@ p5.prototype.disableTextHighlighting = function() {
 };
 
 /**
+ * Prevents zoom lens popup
+ * @method disableLongPressZoom
+ * @private
+ */
+p5.prototype.disableLongPressZoom = function() {
+  document.addEventListener('touchstart', function (event) {
+    // Call your custom function
+    touchStarted(event);
+  }, { passive: false });
+};
+
+
+/**
  * Checks if the sensor permission has been granted.
  * @method isSensorPermissionGranted
  * @return {boolean} True if the sensor permission is granted, false otherwise.
@@ -791,6 +804,14 @@ p5.prototype.captureSoundLevel = function() {
 };
 
 /**
+ * Gets the current sound level from the microphone.
+ * @method getSoundLevel
+ * @return {number} The current sound level.
+ */
+p5.prototype.getSoundLevel = p5.prototype.captureSoundLevel;
+
+
+/**
  * Gets the current color from the video feed.
  * @method getColor
  * @return {Array} An array containing RGB values.
@@ -811,9 +832,3 @@ p5.prototype.getLightLevel = p5.prototype.captureLightLevel;
  */
 p5.prototype.getBrightness = p5.prototype.captureBrightness;
 
-/**
- * Gets the current sound level from the microphone.
- * @method getSoundLevel
- * @return {number} The current sound level.
- */
-p5.prototype.getSoundLevel = p5.prototype.captureSoundLevel;
