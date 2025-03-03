@@ -90,13 +90,10 @@ p5.prototype.disableTextHighlighting = function() {
  */
 p5.prototype.disableLongPressZoom = function() {
 
-  const elements = [select('html'), select('body')];
-  for (let el of elements) {
-    el.style('-webkit-user-select', 'none')
-      .style('-webkit-touch-callout', 'none')
-      .style('user-select', 'none');
-  }
-
+  document.body.style.userSelect = 'none';            // Standard
+  document.body.style.webkitUserSelect = 'none';      // iOS/Chrome on iOS
+  document.body.style.webkitTouchCallout = 'none';    // iOS callout (copy/paste)
+  
   document.addEventListener('touchstart', function (event) {
     // Call your custom function
     touchStarted(event);
