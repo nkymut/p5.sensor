@@ -13,6 +13,13 @@ p5.sensor is a p5.js library that provides access to mobile device sensors such 
 
 To use p5.sensor in your project, include the library in your HTML file:
 
+### CDNs
+
+```html
+<script src=https://unpkg.com/p5.sensor@0.1.0/p5.sensor.js"></script>
+```
+
+### GitHub Pages
 ```html
 <script src="https://nkymut.github.io/p5.sensor/p5.sensor.js"></script>
 ```
