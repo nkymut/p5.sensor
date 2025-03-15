@@ -1,10 +1,29 @@
 {
   "name": "p5.sensor",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "A p5.js library for accessing mobile device sensors.",
   "main": "p5.sensor.js",
+  "module": "p5.sensor.js",
+  "files": [
+    "p5.sensor.js",
+    "p5.sensor.min.js",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
-    "docs": "jsdoc -c jsdoc.json"
+    "docs": "jsdoc -c jsdoc.json",
+    "build": "npm run build:js && npm run build:min",
+    "build:js": "echo \"Add your build command here\"",
+    "build:min": "echo \"Add your minification command here\"",
+    "prepublishOnly": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nkymut/p5.sensor.git"
+  },
+  "homepage": "https://github.com/nkymut/p5.sensor#readme",
+  "bugs": {
+    "url": "https://github.com/nkymut/p5.sensor/issues"
   },
   "keywords": [
     "p5.js",
@@ -12,6 +31,11 @@
     "acceleration",
     "orientation",
     "gravity",
+    "gyroscope",
+    "compass",
+    "light",
+    "touch",
+    "magnetometer",
     "mobile"
   ],
   "author": "Yuta Nakayama",

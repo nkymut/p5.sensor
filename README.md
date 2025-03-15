@@ -26,9 +26,32 @@ To use p5.sensor in your project, include the library in your HTML file:
 
 ## Usage
 
+
+### Touch Sensor
+
+Optimize your p5.js sketch for touch interactions by disabling default touch behaviors of the browser.
+
+- Disable text selection
+- Disable context menu
+- Disable zooming
+- Disable highlighting
+- Disable long press zoom 
+
+```javascript
+function setup() {
+  setupTouchSensor();
+}
+
+
+```
+
+
+
 ### Motion Sensors
 
 Set up motion sensors and access acceleration data:
+In addition to the acceleration data, you can also access gravity data, rotation data, and orientation data.
+It also provides a method to request permission to access motion sensors for iOS.
 
 ```javascript
 function setup() {
