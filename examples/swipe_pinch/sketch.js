@@ -1,3 +1,7 @@
+let deltaX, deltaY, swipeDir = 0;
+let pinchScale = 0;
+    
+
 // The setup function runs once when the program starts
 function setup() {
   // Create a canvas that matches the size of the window
@@ -12,13 +16,17 @@ function setup() {
   setupTouchSensor();
 
   // Enable swipe gesture detection
-  enableSwipe((deltaX, deltaY) => {
-    console.log(`Swipe detected: deltaX = ${deltaX}, deltaY = ${deltaY}`);
+  enableSwipe((_swipeDir, _deltaX, _deltaY) => {
+    swipeDir = _swipeDir;
+    deltaX = _deltaX;
+    deltaY = _deltaY;
+    console.log(`Swipe detected: ${swipeDir} deltaX = ${deltaX}, deltaY = ${deltaY}`);
   });
 
   // Enable pinch gesture detection
-  enablePinch((scale) => {
-    console.log(`Pinch detected: scale = ${scale}`);
+  enablePinch((_pinchScale) => {
+    pinchScale = _pinchScale;
+    console.log(`Pinch detected: ${pinchScale}`);
   });
 }
 
@@ -46,6 +54,11 @@ function draw() {
     // Display the touch index number above the circle using string concatenation
     text("Touch " + i, t.x, t.y - 60);
   }
+  
+  textAlign(LEFT)
+  text(`Swipe: ${swipeDir} ${deltaX},${deltaY}`,50,20);
+  text(`Pinch: ${pinchScale}`,50,40);
+  
 }
 
 

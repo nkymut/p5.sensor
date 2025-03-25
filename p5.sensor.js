@@ -862,7 +862,15 @@ p5.prototype.enableSwipe = function(onSwipe) {
       const currentTouch = event.touches[0];
       const deltaX = currentTouch.pageX - initialTouch.pageX;
       const deltaY = currentTouch.pageY - initialTouch.pageY;
-      onSwipe(deltaX, deltaY);
+
+      let swipeDir = '';
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        swipeDir = deltaX > 0 ? 'right' : 'left';
+      } else {
+        swipeDir = deltaY > 0 ? 'down' : 'up';
+      }
+
+      onSwipe(swipeDir, deltaX, deltaY);
     }
   };
 
@@ -883,6 +891,7 @@ p5.prototype.enableSwipe = function(onSwipe) {
  */
 p5.prototype.enablePinch = function(onPinch) {
   let initialDistance = null;
+  let initialScale = 1;
 
   const handleTouchStart = (event) => {
     if (event.touches.length === 2) {
@@ -890,6 +899,7 @@ p5.prototype.enablePinch = function(onPinch) {
         event.touches[0].pageX - event.touches[1].pageX,
         event.touches[0].pageY - event.touches[1].pageY
       );
+      initialScale = 1; // Reset the initial scale
     }
   };
 
@@ -899,7 +909,7 @@ p5.prototype.enablePinch = function(onPinch) {
         event.touches[0].pageX - event.touches[1].pageX,
         event.touches[0].pageY - event.touches[1].pageY
       );
-      const scale = currentDistance / initialDistance;
+      const scale = (currentDistance / initialDistance) * initialScale;
       onPinch(scale);
     }
   };
