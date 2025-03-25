@@ -842,3 +842,74 @@ p5.prototype.getLightLevel = p5.prototype.captureLightLevel;
  */
 p5.prototype.getBrightness = p5.prototype.captureBrightness;
 
+/**
+ * Enables swipe gestures by adding event listeners for touch events.
+ * Calls the specified callback function for swipe gestures.
+ * @method enableSwipe
+ * @param {Function} onSwipe - Callback function for swipe gesture.
+ */
+p5.prototype.enableSwipe = function(onSwipe) {
+  let initialTouch = null;
+
+  const handleTouchStart = (event) => {
+    if (event.touches.length === 1) {
+      initialTouch = event.touches[0];
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (event.touches.length === 1 && initialTouch) {
+      const currentTouch = event.touches[0];
+      const deltaX = currentTouch.pageX - initialTouch.pageX;
+      const deltaY = currentTouch.pageY - initialTouch.pageY;
+      onSwipe(deltaX, deltaY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialTouch = null;
+  };
+
+  document.addEventListener('touchstart', handleTouchStart, { passive: false });
+  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  document.addEventListener('touchend', handleTouchEnd, { passive: false });
+};
+
+/**
+ * Enables pinch gestures by adding event listeners for touch events.
+ * Calls the specified callback function for pinch gestures.
+ * @method enablePinch
+ * @param {Function} onPinch - Callback function for pinch gesture.
+ */
+p5.prototype.enablePinch = function(onPinch) {
+  let initialDistance = null;
+
+  const handleTouchStart = (event) => {
+    if (event.touches.length === 2) {
+      initialDistance = Math.hypot(
+        event.touches[0].pageX - event.touches[1].pageX,
+        event.touches[0].pageY - event.touches[1].pageY
+      );
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (event.touches.length === 2 && initialDistance !== null) {
+      const currentDistance = Math.hypot(
+        event.touches[0].pageX - event.touches[1].pageX,
+        event.touches[0].pageY - event.touches[1].pageY
+      );
+      const scale = currentDistance / initialDistance;
+      onPinch(scale);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialDistance = null;
+  };
+
+  document.addEventListener('touchstart', handleTouchStart, { passive: false });
+  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  document.addEventListener('touchend', handleTouchEnd, { passive: false });
+};
+
