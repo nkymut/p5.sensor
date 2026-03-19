@@ -27,11 +27,127 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>// Encapsulate variables within the p5 prototype
+
+//Touch
+
 /**
- * @property {boolean} _permissionGranted
+ * Sets up touch event handling by disabling default touch behaviors and preventing unwanted interactions.
+ * This includes disabling text selection, context menus, and other default touch gestures.
+ * @method setupTouchSensor
+ * @example
+ * function setup() {
+ *   setupTouchSensor();
+ * }
+ */
+
+p5.prototype.setupTouchSensor = function(options = {}) {
+  // Set default options
+  const defaults = {
+    disableGestures: false,
+    disableSelection: true, 
+    disableContextMenu: true,
+    disableHighlighting: true,
+    disableLongPressZoom: true
+  };
+
+  // Merge provided options with defaults
+  const settings = {...defaults, ...options};
+
+  // Disable touch gestures like zooming and panning
+  if (settings.disableGestures) {
+    this.disableTouchGestures();
+  }
+
+  // Prevent text selection on the page
+  if (settings.disableSelection) {
+    this.disableTextSelection();
+  }
+
+  // Prevent the context menu (right-click) from appearing anywhere
+  if (settings.disableContextMenu) {
+    this.disableContextMenu();
+  }
+
+  // Prevent text selection
+  if (settings.disableHighlighting) {
+    this.disableTextHighlighting();
+  }
+
+  if (settings.disableLongPressZoom){
+    this.disableLongPressZoom();
+  }
+
+  
+}
+
+/**
+ * Disables touch gestures like zooming and panning while allowing touch actions on buttons
+ * @method disableTouchGestures
  * @private
  */
-p5.prototype._permissionGranted = false;
+p5.prototype.disableTouchGestures = function() {
+  document.body.style.touchAction = "manipulation";
+};
+
+/**
+ * Prevents text selection on the page
+ * @method disableTextSelection
+ * @private
+ */
+p5.prototype.disableTextSelection = function() {
+  document.body.style.userSelect = "none";
+};
+
+/**
+ * Prevents the context menu (right-click) from appearing
+ * @method disableContextMenu
+ * @private
+ */
+p5.prototype.disableContextMenu = function() {
+  document.addEventListener("contextmenu", (event) => event.preventDefault());
+};
+
+/**
+ * Prevents text highlighting/selection
+ * @method disableTextHighlighting
+ * @private
+ */
+p5.prototype.disableTextHighlighting = function() {
+  document.addEventListener("selectstart", (event) => event.preventDefault());
+};
+
+/**
+ * Prevents zoom lens popup
+ * @method disableLongPressZoom
+ * @private
+ */
+p5.prototype.disableLongPressZoom = function() {
+
+  document.body.style.userSelect = 'none';            // Standard
+  document.body.style.webkitUserSelect = 'none';      // iOS/Chrome on iOS
+  document.body.style.webkitTouchCallout = 'none';    // iOS callout (copy/paste)
+
+  document.addEventListener('touchstart', function (event) {
+    // Call your custom function
+    touchStarted(event);
+  }, { passive: false });
+};
+
+
+/**
+ * Checks if the sensor permission has been granted.
+ * @method isSensorPermissionGranted
+ * @return {boolean} True if the sensor permission is granted, false otherwise.
+ */
+p5.prototype.isSensorPermissionGranted = function() {
+  return this._sensorPermissionGranted;
+};
+
+/**
+ * @property {boolean} _sensorPermissionGranted - Indicates whether device motion/orientation sensor access is allowed
+ * @private 
+ */
+p5.prototype._sensorPermissionGranted = false;
 
 /**
  * @property {Object|null} _accelerationWithGravity
@@ -149,20 +265,47 @@ p5.prototype.checkSensorPermission = function() {
                 .style("font-size", "24px")
                 .center()
                 .mousePressed(this.requestSensorAccess.bind(this));
-            throw new Error("Sensor permission required");
+            //throw new Error("Sensor permission required");
         }).then(() => {
-            this._permissionGranted = true;
-            window.addEventListener("deviceorientation", this.updateMotion.bind(this), true);
-            window.addEventListener("deviceorientationabsolute", this.updateMotion.bind(this), true);
+            this._sensorPermissionGranted = true;
+            window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
+            window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
             window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
         });
     } else {
-        this._permissionGranted = true;
-        window.addEventListener("deviceorientation", this.updateMotion.bind(this), true);
-        window.addEventListener("deviceorientationabsolute", this.updateMotion.bind(this), true);
+        this._sensorPermissionGranted = true;
+        window.addEventListener("deviceorientation", this.updateOrientation.bind(this), true);
+        window.addEventListener("deviceorientationabsolute", this.updateOrientation.bind(this), true);
         window.addEventListener("devicemotion", this.updateMotion.bind(this), true);
     }
 };
+
+
+/**
+ * Handles the sensor permission request.
+ * @method requestSensorAccess
+ * @private
+ */
+p5.prototype.requestSensorAccess = function() {
+    // Request permission from the user
+    Promise.all([
+      DeviceOrientationEvent.requestPermission(),
+      DeviceMotionEvent.requestPermission()
+    ]).then(([orientationResponse, motionResponse]) => {
+      // If both permissions are granted, set _sensorPermissionGranted to true
+      if (orientationResponse === "granted" &amp;&amp; motionResponse === "granted") {
+        this._sensorPermissionGranted = true;
+      } else {
+        // If either permission is denied, keep it false
+        this._sensorPermissionGranted = false;
+      }
+    })
+    .catch(console.error); // Log errors to the console
+  
+    // Remove the button after the user interacts with it
+    select("#sensorPermissionButton").remove();
+};
+
 
 /* p5 default motion variables
 let accelerationX;
@@ -173,7 +316,83 @@ let rotationY;
 let rotationZ;
 */
 
-let debugMotion = "";
+/**
+ * Updates orientation data from device sensors.
+ * @method updateOrientation
+ * @param {DeviceOrientationEvent} event - The orientation event containing sensor data.
+ * @private
+ */
+p5.prototype.updateOrientation = function(event) {
+  // Handle regular DeviceOrientationEvent
+  if (!event.absolute) {
+    let orientX = event.beta;    // x-axis rotation [-180,180]
+    let orientY = event.gamma;   // y-axis rotation [-90,90]
+    let orientZ = event.alpha;   // z-axis rotation [0,360)
+    
+    // Use p5.js deviceOrientation
+    if (deviceOrientation === 'landscape') {
+      orientX = event.gamma;
+      orientY = -event.beta;
+    } else if (deviceOrientation === 'portrait') {
+      orientX = event.beta;
+      orientY = event.gamma;
+    } else {
+      // Default or unknown orientation
+      orientX = event.beta;
+      orientY = event.gamma;
+    }
+
+    this._orientation = {
+      x: orientX,
+      y: orientY,
+      z: orientZ,
+      alpha: orientZ,
+      beta: orientX,
+      gamma: orientY
+    };
+    
+    this._setProperty('orientationX', orientX);
+    this._setProperty('orientationY', orientY);
+    this._setProperty('orientationZ', orientZ);
+  }
+  // Handle Absolute Orientation
+  else {
+    let absOrientX = event.beta;
+    let absOrientY = event.gamma;
+    let absOrientZ = event.alpha;
+    
+    // Adjust values based on screen orientation
+    if (deviceOrientation === 'landscape') {
+      absOrientX = event.gamma;
+      absOrientY = -event.beta;
+    } else if (deviceOrientation === 'portrait') {
+      absOrientX = -event.gamma;
+      absOrientY = event.beta;
+    }
+
+    this._absoluteOrientation = {
+      x: absOrientX,
+      y: absOrientY,
+      z: absOrientZ,
+      alpha: absOrientZ,
+      beta: absOrientX,
+      gamma: absOrientY
+    };
+    
+    this._setProperty('absoluteOrientationX', absOrientX);
+    this._setProperty('absoluteOrientationY', absOrientY);
+    this._setProperty('absoluteOrientationZ', absOrientZ);
+
+    // Handle compass heading
+    if (event.webkitCompassHeading !== undefined) {
+      this._setProperty('heading', event.webkitCompassHeading);
+    } else if (event.alpha !== null) {
+      // Convert alpha to compass heading (alpha is measured clockwise, heading counter-clockwise)
+      let heading = (360 - event.alpha) % 360;
+      this._setProperty('heading', heading);
+    }
+  }
+};
 
 /**
  * Updates motion data from device sensors.
@@ -182,99 +401,98 @@ let debugMotion = "";
  * @private
  */
 p5.prototype.updateMotion = function(event) {
-  const accWithGravity = event.accelerationIncludingGravity;
-  const acc = event.acceleration;
-  const rot = event.rotationRate;
-  const orient = event.orientation;
-  const absOrient = event.absolute;
+  // Handle DeviceMotionEvent
+  if (event instanceof DeviceMotionEvent) {
+    const accWithGravity = event.accelerationIncludingGravity;
+    const acc = event.acceleration;
+    const rot = event.rotationRate;
 
-  debugMotion = JSON.stringify(event);
+    // Handle acceleration including gravity
+    if (accWithGravity) {
+      // Adjust for landscape mode if needed
+      let gravityX = accWithGravity.x;
+      let gravityY = accWithGravity.y;
+      
+      // Adjust values based on screen orientation
+      if (deviceOrientation === 'landscape') {
+        gravityX = -accWithGravity.y;
+        gravityY = accWithGravity.x;
+      } else if (deviceOrientation === 'portrait') {
+        gravityX = accWithGravity.y;
+        gravityY = -accWithGravity.x;
+      }
 
-  // Handle acceleration including gravity
-  if (accWithGravity) {
-    this._accelerationWithGravity = {
-      x: accWithGravity.x,
-      y: accWithGravity.y, 
-      z: accWithGravity.z
-    };
-    this.gravityX = accWithGravity.x;
-    this.gravityY = accWithGravity.y;
-    this.gravityZ = accWithGravity.z;
-  } else {
-    this._accelerationWithGravity = null;
-  }
-
-  // Handle pure acceleration
-  if (acc) {
-    this._acceleration = {
-      x: acc.x,
-      y: acc.y,
-      z: acc.z
-    };
-  } else {
-    this._acceleration = null;
-  }
-
-  // Handle rotation rate
-  if (rot) {
-    this._rotation = {
-      alpha: rot.alpha, // rotation around z-axis
-      beta: rot.beta,   // rotation around x-axis
-      gamma: rot.gamma,  // rotation around y-axis
-      z: rot.alpha,
-      x: rot.beta,
-      y: rot.gamma
-    };
-  } else {
-    this._rotation = null;
-  }
-
-  // Handle device orientation
-  if (orient) {
-    this._orientation = {
-      alpha: orient.alpha,
-      beta: orient.beta,
-      gamma: orient.gamma,
-      z: orient.alpha,
-      x: orient.beta,
-      y: orient.gamma
-    };
-    this.orientationX = orient.alpha;
-    this.orientationY = orient.beta;
-    this.orientationZ = orient.gamma;
-    if (event.webkitCompassHeading !== undefined) {
-        heading = event.webkitCompassHeading;
-    } else if (orient.alpha !== null) {
-        // Note: event.alpha may not be referenced to true north on all devices.
-        heading = orient.alpha;
+      this._accelerationWithGravity = {
+        x: gravityX,
+        y: gravityY, 
+        z: accWithGravity.z
+      };
+      this._setProperty('gravityX', gravityX);
+      this._setProperty('gravityY', gravityY);
+      this._setProperty('gravityZ', accWithGravity.z);
     }
-  } else {
-    this._orientation = null;
-  }
 
-  // Handle absolute orientation
-  if (absOrient) {
-    this._absoluteOrientation = {
-      alpha: absOrient.alpha,
-      beta: absOrient.beta,
-      gamma: absOrient.gamma,
-      z: absOrient.alpha,
-      x: absOrient.beta,
-      y: absOrient.gamma
-    };
-    this.absoluteOrientationX = absOrient.alpha;
-    this.absoluteOrientationY = absOrient.beta;
-    this.absoluteOrientationZ = absOrient.gamma;
-  } else {
-    this._absoluteOrientation = null;
-  }
+    // Handle pure acceleration
+    if (acc) {
+      let accelX = acc.x;
+      let accelY = acc.y;
+      
+      // Adjust values based on screen orientation
+      if (deviceOrientation === 'landscape') {
+        accelX = -acc.y;
+        accelY = acc.x;
+      } else if (deviceOrientation === 'portrait') {
+        accelX = acc.y;
+        accelY = -acc.x;
+      }
 
-  debugMotion = JSON.stringify({
+      this._acceleration = {
+        x: accelX,
+        y: accelY,
+        z: acc.z
+      };
+    }
+
+    // Handle rotation rate
+    if (rot) {
+      let rotX = rot.beta;   // rotation around x-axis
+      let rotY = rot.gamma;  // rotation around y-axis
+      let rotZ = rot.alpha;  // rotation around z-axis
+      
+      // Adjust values based on screen orientation
+      if (deviceOrientation === 'landscape') {
+        rotX = rot.gamma;
+        rotY = -rot.beta;
+      } else if (deviceOrientation === 'portrait') {
+        rotX = -rot.gamma;
+        rotY = rot.beta;
+      }
+
+      this._rotation = {
+        x: rotX,
+        y: rotY,
+        z: rotZ,
+        alpha: rotZ,
+        beta: rotX,
+        gamma: rotY
+      };
+    }
+  }
+};
+
+/**
+ * Returns a JSON string containing debug information about motion sensor data.
+ * @method debugMotion
+ * @return {string} JSON string with motion sensor data
+ */
+p5.prototype.debugMotion = function() {
+  return JSON.stringify({
     accelerationWithGravity: this._accelerationWithGravity,
-    acceleration: this._acceleration,
+    acceleration: this._acceleration, 
     rotation: this._rotation,
     orientation: this._orientation,
-    absoluteOrientation: this._absoluteOrientation
+    absoluteOrientation: this._absoluteOrientation,
+    screenOrientation: deviceOrientation
   });
 };
 
@@ -282,15 +500,75 @@ p5.prototype.updateMotion = function(event) {
  * Retrieves the current acceleration data including gravity.
  * @method getAccelerationWithGravity
  * @return {Object|null} An object containing acceleration data or null if unavailable.
+ * @alias getGravity
  */
 p5.prototype.getAccelerationWithGravity = function() {
-  if (this._permissionGranted &amp;&amp; this._accelerationWithGravity) {
+  if (this._sensorPermissionGranted &amp;&amp; this._accelerationWithGravity) {
     return { ...this._accelerationWithGravity };
   } else {
     console.log("Accelerometer data not available.");
     return null;
   }
 };
+
+
+p5.prototype.getGravity = p5.prototype.getAccelerationWithGravity;
+
+/**
+ * Retrieves the current acceleration data.
+ * @method getAcceleration
+ * @return {Object|null} An object containing acceleration data or null if unavailable.
+ */
+p5.prototype.getAcceleration = function() {
+  if (this._sensorPermissionGranted &amp;&amp; this._acceleration) {
+    return { ...this._acceleration };
+  } else {
+    console.log("Accelerometer data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current rotation data.
+ * @method getRotation
+ * @return {Object|null} An object containing rotation data or null if unavailable.
+ */
+p5.prototype.getRotation = function() {
+  if (this._sensorPermissionGranted &amp;&amp; this._rotation) {
+    return { ...this._rotation };
+  } else {
+    console.log("Rotation data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current orientation data.
+ * @method getOrientation
+ * @return {Object|null} An object containing orientation data or null if unavailable.
+ */
+p5.prototype.getOrientation = function() {
+  if (this._sensorPermissionGranted &amp;&amp; this._orientation) {
+    return { ...this._orientation };
+  } else {
+    console.log("Orientation data not available.");
+    return null;
+  }
+};
+
+/**
+ * Retrieves the current absolute orientation data.
+ * @method getAbsoluteOrientation
+ * @return {Object|null} An object containing absolute orientation data or null if unavailable.
+ */
+p5.prototype.getAbsoluteOrientation = function() {
+  if (this._sensorPermissionGranted &amp;&amp; this._absoluteOrientation) {
+    return { ...this._absoluteOrientation };
+  } else {
+    console.log("Absolute orientation data not available.");
+    return null;
+  }
+};  
 
 /*
 Geolocation API
@@ -300,25 +578,64 @@ Geolocation API
  * Requests the current geolocation of the device.
  * @method requestGeolocation
  */
-p5.prototype.requestGeolocation = function() {
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(this.getGeolocation.bind(this), this.showGeolocationError.bind(this), {
-            enableHighAccuracy: true,
-        });
-    } else {
+p5.prototype.requestGeolocation = function(handleGeolocation, interval = 0) {
+    if (!navigator.geolocation) {
         alert("Geolocation is not supported by this browser.");
+        return;
+    }
+
+    const options = {
+        enableHighAccuracy: true
+    };
+
+    const successCallback = (position) => {
+        const geolocationData = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        };
+        this._setProperty('latitude', position.coords.latitude);
+        this._setProperty('longitude', position.coords.longitude);
+        handleGeolocation(geolocationData);
+    };
+
+    if (interval > 0) {
+        // Set up recurring geolocation updates
+        const watchId = navigator.geolocation.watchPosition(
+            successCallback,
+            this.showGeolocationError.bind(this),
+            options
+        );
+        // Store watch ID to allow clearing later
+        this._geolocationWatchId = watchId;
+
+        // Set timeout to clear watch after interval
+        setTimeout(() => {
+            navigator.geolocation.clearWatch(watchId);
+        }, interval);
+    } else {
+        // One-time geolocation request
+        navigator.geolocation.getCurrentPosition(
+            successCallback,
+            this.showGeolocationError.bind(this),
+            options
+        );
     }
 };
 
-/**
- * Callback function to handle successful geolocation retrieval.
- * @method getGeolocation
- * @param {Position} position - The position object containing latitude and longitude.
- */
-p5.prototype.getGeolocation = function(position) {
-    this.lat = position.coords.latitude;
-    this.lon = position.coords.longitude;
-};
+// /**
+//  * Callback function to handle successful geolocation retrieval.
+//  * @method getGeolocation
+//  * @param {Position} position - The position object containing latitude and longitude.
+//  * @return {Object} An object containing latitude and longitude.
+//  */
+// p5.prototype.getGeolocation = function(position) {
+//     this._setProperty('latitude', position.coords.latitude);
+//     this._setProperty('longitude', position.coords.longitude);
+//     return {
+//         latitude: position.coords.latitude,
+//         longitude: position.coords.longitude
+//     };
+// };
 
 /**
  * Callback function to handle geolocation errors.
@@ -341,7 +658,7 @@ p5.prototype.showGeolocationError = function(error) {
             errorMsg = "An unknown error occurred.";
             break;
     }
-    alert(errorMsg);
+    console.error(errorMsg);
 };
 
 /*
@@ -361,6 +678,15 @@ p5.prototype._video = null;
 p5.prototype._isFrontCamera = true;
 
 /**
+ * Returns whether the front camera is currently active.
+ * @method isFrontCamera
+ * @return {boolean} True if the front camera is active, false if the back camera is active.
+ */
+p5.prototype.isFrontCamera = function() {
+  return this._isFrontCamera;
+};
+
+/**
  * @property {number} _brightnessLevel
  * @private
  */
@@ -370,6 +696,7 @@ p5.prototype._brightnessLevel = 0;
  * Captures the color at the center of the video feed.
  * @method captureColor
  * @return {Array} An array containing RGB values.
+ * @alias getColor
  */
 p5.prototype.captureColor = function() {
     this._video.loadPixels();
@@ -387,31 +714,27 @@ p5.prototype.captureColor = function() {
  * Captures the light level from the video feed.
  * @method captureLightLevel
  * @return {number} The brightness level.
+ * @alias getLightLevel
  */
 p5.prototype.captureLightLevel = function() {
-    return this.captureBrightness();
+    return this.updateBrightness();
 };
 
 /**
  * Captures the brightness level from the video feed.
  * @method captureBrightness
  * @return {number} The brightness level.
+ * @alias getBrightness
  */
 p5.prototype.captureBrightness = function() {
-    this._video.loadPixels();
-    let index = ((this._video.height / 2) * this._video.width + this._video.width / 2) * 4;
-    let r = this._video.pixels[index];
-    let g = this._video.pixels[index + 1];
-    let b = this._video.pixels[index + 2];
-    this._brightnessLevel = int((r + g + b) / 3); // Compute grayscale brightness
-
-    return this._brightnessLevel;
+  return this.updateBrightness();
 };
 
 /**
  * Updates the brightness level from the video feed.
  * @method updateBrightness
  * @return {number} The updated brightness level.
+ * @alias updateBrightness
  */
 p5.prototype.updateBrightness = function() {
     this._video.loadPixels();
@@ -419,7 +742,7 @@ p5.prototype.updateBrightness = function() {
     let r = this._video.pixels[index];
     let g = this._video.pixels[index + 1];
     let b = this._video.pixels[index + 2];
-    this._brightnessLevel = (r + g + b) / 3; // Compute grayscale brightness
+    this._setProperty('_brightnessLevel', (r + g + b) / 3); // Compute grayscale brightness
 
     return this._brightnessLevel;
 };
@@ -430,19 +753,24 @@ p5.prototype.updateBrightness = function() {
  * @param {string} [selectCamera="front"] - The camera orientation, either "front" or "back".
  */
 p5.prototype.setupCamera = function(selectCamera = "front") {
-    if (this.video) {
-        this.video.remove();
+    if (this._video) {
+        this._video.remove();
     }
 
-    this.isFrontCamera = selectCamera === "front";
+    this._setProperty('_isFrontCamera', selectCamera === "front");
 
-    let constraints = this.isFrontCamera
+    let constraints = this._isFrontCamera
         ? { video: { facingMode: "user" }, audio: false }
         : { video: { facingMode: "environment" }, audio: false };
 
-    this.video = createCapture(constraints);
-    this.video.size(160, 120);
-    this.video.hide();
+    this._video = createCapture(constraints);
+    this._video.size(160, 120);
+    this._video.loadPixels();
+
+    this._video.hide();
+
+    this._setProperty('_video', this._video);
+    
 };
 
 /**
@@ -477,8 +805,8 @@ p5.prototype.initializeCamera = function(selectCamera = "front") {
  * @method toggleCamera
  */
 p5.prototype.toggleCamera = function() {
-    this.isFrontCamera = !this.isFrontCamera;
-    this.initializeCamera();
+    this._setProperty('_isFrontCamera', !this._isFrontCamera);
+    this.initializeCamera(this._isFrontCamera ? "front" : "back");
 };
 
 /*
@@ -490,14 +818,27 @@ Sound Sensor
  * @private
  */
 p5.prototype._mic = null;
+p5.prototype._micStarted = false;
 
 /**
  * Sets up the sound sensor.
  * @method setupSoundSensor
  */
 p5.prototype.setupSoundSensor = function() {
-    this._mic = new p5.AudioIn();
-    this._mic.start();
+    this.userStartAudio().then(() => {
+        this._mic = new p5.AudioIn();
+        this._mic.start();
+        this._micStarted = true;
+    });
+};
+
+/**
+ * Checks if the sound sensor is started.
+ * @method isSoundSensorStarted
+ * @return {boolean} True if the sound sensor is started, false otherwise.
+ */
+p5.prototype.isSoundSensorStarted = function() {
+    return this._micStarted;
 };
 
 /**
@@ -508,6 +849,117 @@ p5.prototype.setupSoundSensor = function() {
 p5.prototype.captureSoundLevel = function() {
     return this._mic.getLevel();
 };
+
+/**
+ * Gets the current sound level from the microphone.
+ * @method getSoundLevel
+ * @return {number} The current sound level.
+ */
+p5.prototype.getSoundLevel = p5.prototype.captureSoundLevel;
+
+
+/**
+ * Gets the current color from the video feed.
+ * @method getColor
+ * @return {Array} An array containing RGB values.
+ */
+p5.prototype.getColor = p5.prototype.captureColor;
+
+/**
+ * Gets the current light level from the video feed.
+ * @method getLightLevel
+ * @return {number} The brightness level.
+ */
+p5.prototype.getLightLevel = p5.prototype.captureLightLevel;
+
+/**
+ * Gets the current brightness level from the video feed.
+ * @method getBrightness
+ * @return {number} The brightness level.
+ */
+p5.prototype.getBrightness = p5.prototype.captureBrightness;
+
+/**
+ * Enables swipe gestures by adding event listeners for touch events.
+ * Calls the specified callback function for swipe gestures.
+ * @method enableSwipe
+ * @param {Function} onSwipe - Callback function for swipe gesture.
+ */
+p5.prototype.enableSwipe = function(onSwipe) {
+  let initialTouch = null;
+
+  const handleTouchStart = (event) => {
+    if (event.touches.length === 1) {
+      initialTouch = event.touches[0];
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (event.touches.length === 1 &amp;&amp; initialTouch) {
+      const currentTouch = event.touches[0];
+      const deltaX = currentTouch.pageX - initialTouch.pageX;
+      const deltaY = currentTouch.pageY - initialTouch.pageY;
+
+      let swipeDir = '';
+      if (Math.abs(deltaX) > Math.abs(deltaY)) {
+        swipeDir = deltaX > 0 ? 'right' : 'left';
+      } else {
+        swipeDir = deltaY > 0 ? 'down' : 'up';
+      }
+
+      onSwipe(swipeDir, deltaX, deltaY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialTouch = null;
+  };
+
+  document.addEventListener('touchstart', handleTouchStart, { passive: false });
+  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  document.addEventListener('touchend', handleTouchEnd, { passive: false });
+};
+
+/**
+ * Enables pinch gestures by adding event listeners for touch events.
+ * Calls the specified callback function for pinch gestures.
+ * @method enablePinch
+ * @param {Function} onPinch - Callback function for pinch gesture.
+ */
+p5.prototype.enablePinch = function(onPinch) {
+  let initialDistance = null;
+  let initialScale = 1;
+
+  const handleTouchStart = (event) => {
+    if (event.touches.length === 2) {
+      initialDistance = Math.hypot(
+        event.touches[0].pageX - event.touches[1].pageX,
+        event.touches[0].pageY - event.touches[1].pageY
+      );
+      initialScale = 1; // Reset the initial scale
+    }
+  };
+
+  const handleTouchMove = (event) => {
+    if (event.touches.length === 2 &amp;&amp; initialDistance !== null) {
+      const currentDistance = Math.hypot(
+        event.touches[0].pageX - event.touches[1].pageX,
+        event.touches[0].pageY - event.touches[1].pageY
+      );
+      const scale = (currentDistance / initialDistance) * initialScale;
+      onPinch(scale);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    initialDistance = null;
+  };
+
+  document.addEventListener('touchstart', handleTouchStart, { passive: false });
+  document.addEventListener('touchmove', handleTouchMove, { passive: false });
+  document.addEventListener('touchend', handleTouchEnd, { passive: false });
+};
+
 </code></pre>
         </article>
     </section>
@@ -518,13 +970,13 @@ p5.prototype.captureSoundLevel = function() {
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#captureBrightness">captureBrightness</a></li><li><a href="global.html#captureColor">captureColor</a></li><li><a href="global.html#captureLightLevel">captureLightLevel</a></li><li><a href="global.html#captureSoundLevel">captureSoundLevel</a></li><li><a href="global.html#getAccelerationWithGravity">getAccelerationWithGravity</a></li><li><a href="global.html#getGeolocation">getGeolocation</a></li><li><a href="global.html#initializeCamera">initializeCamera</a></li><li><a href="global.html#requestGeolocation">requestGeolocation</a></li><li><a href="global.html#setupCamera">setupCamera</a></li><li><a href="global.html#setupColorSensor">setupColorSensor</a></li><li><a href="global.html#setupLightSensor">setupLightSensor</a></li><li><a href="global.html#setupMotionSensor">setupMotionSensor</a></li><li><a href="global.html#setupSoundSensor">setupSoundSensor</a></li><li><a href="global.html#showGeolocationError">showGeolocationError</a></li><li><a href="global.html#toggleCamera">toggleCamera</a></li><li><a href="global.html#updateBrightness">updateBrightness</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#captureBrightness">captureBrightness</a></li><li><a href="global.html#captureColor">captureColor</a></li><li><a href="global.html#captureLightLevel">captureLightLevel</a></li><li><a href="global.html#captureSoundLevel">captureSoundLevel</a></li><li><a href="global.html#debugMotion">debugMotion</a></li><li><a href="global.html#enablePinch">enablePinch</a></li><li><a href="global.html#enableSwipe">enableSwipe</a></li><li><a href="global.html#getAbsoluteOrientation">getAbsoluteOrientation</a></li><li><a href="global.html#getAcceleration">getAcceleration</a></li><li><a href="global.html#getAccelerationWithGravity">getAccelerationWithGravity</a></li><li><a href="global.html#getBrightness">getBrightness</a></li><li><a href="global.html#getColor">getColor</a></li><li><a href="global.html#getLightLevel">getLightLevel</a></li><li><a href="global.html#getOrientation">getOrientation</a></li><li><a href="global.html#getRotation">getRotation</a></li><li><a href="global.html#getSoundLevel">getSoundLevel</a></li><li><a href="global.html#initializeCamera">initializeCamera</a></li><li><a href="global.html#isFrontCamera">isFrontCamera</a></li><li><a href="global.html#isSensorPermissionGranted">isSensorPermissionGranted</a></li><li><a href="global.html#isSoundSensorStarted">isSoundSensorStarted</a></li><li><a href="global.html#requestGeolocation">requestGeolocation</a></li><li><a href="global.html#setupCamera">setupCamera</a></li><li><a href="global.html#setupColorSensor">setupColorSensor</a></li><li><a href="global.html#setupLightSensor">setupLightSensor</a></li><li><a href="global.html#setupMotionSensor">setupMotionSensor</a></li><li><a href="global.html#setupSoundSensor">setupSoundSensor</a></li><li><a href="global.html#setupTouchSensor">setupTouchSensor</a></li><li><a href="global.html#showGeolocationError">showGeolocationError</a></li><li><a href="global.html#toggleCamera">toggleCamera</a></li><li><a href="global.html#updateBrightness">updateBrightness</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.11</a> on Mon Feb 17 2025 15:57:27 GMT+0800 (Singapore Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Mar 19 2026 22:45:24 GMT+0800 (Singapore Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>

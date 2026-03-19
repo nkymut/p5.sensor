@@ -650,6 +650,15 @@ p5.prototype._video = null;
 p5.prototype._isFrontCamera = true;
 
 /**
+ * Returns whether the front camera is currently active.
+ * @method isFrontCamera
+ * @return {boolean} True if the front camera is active, false if the back camera is active.
+ */
+p5.prototype.isFrontCamera = function() {
+  return this._isFrontCamera;
+};
+
+/**
  * @property {number} _brightnessLevel
  * @private
  */
@@ -720,9 +729,9 @@ p5.prototype.setupCamera = function(selectCamera = "front") {
         this._video.remove();
     }
 
-    this.isFrontCamera = selectCamera === "front";
+    this._setProperty('_isFrontCamera', selectCamera === "front");
 
-    let constraints = this.isFrontCamera
+    let constraints = this._isFrontCamera
         ? { video: { facingMode: "user" }, audio: false }
         : { video: { facingMode: "environment" }, audio: false };
 
@@ -768,8 +777,8 @@ p5.prototype.initializeCamera = function(selectCamera = "front") {
  * @method toggleCamera
  */
 p5.prototype.toggleCamera = function() {
-    this.isFrontCamera = !this.isFrontCamera;
-    this.initializeCamera(this.isFrontCamera ? "front" : "back");
+    this._setProperty('_isFrontCamera', !this._isFrontCamera);
+    this.initializeCamera(this._isFrontCamera ? "front" : "back");
 };
 
 /*

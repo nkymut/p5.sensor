@@ -42,6 +42,122 @@
 
 
 
+    <section>
+        <article><h1>p5.sensor</h1>
+<p>p5.sensor is a p5.js library that provides access to mobile device sensors such as acceleration, orientation, and gravity. This library allows developers to easily integrate sensor data into their p5.js sketches.</p>
+<h2>Features</h2>
+<ul>
+<li>Access acceleration, orientation, and gravity data from mobile devices.</li>
+<li>Easy integration with p5.js sketches.</li>
+<li>Supports both iOS and Android devices.</li>
+<li>Provides methods for geolocation, camera, and sound sensor data.</li>
+</ul>
+<h2>Installation</h2>
+<p>To use p5.sensor in your project, include the library in your HTML file:</p>
+<h3>CDNs</h3>
+<pre class="prettyprint source lang-html"><code>&lt;script src=https://unpkg.com/p5.sensor@0.1.0/p5.sensor.js&quot;>&lt;/script>
+</code></pre>
+<h3>GitHub Pages</h3>
+<pre class="prettyprint source lang-html"><code>&lt;script src=&quot;https://nkymut.github.io/p5.sensor/p5.sensor.js&quot;>&lt;/script>
+</code></pre>
+<h2>Usage</h2>
+<h3>Touch Sensor</h3>
+<p>Optimize your p5.js sketch for touch interactions by disabling default touch behaviors of the browser.</p>
+<ul>
+<li>Disable text selection</li>
+<li>Disable context menu</li>
+<li>Disable zooming</li>
+<li>Disable highlighting</li>
+<li>Disable long press zoom</li>
+</ul>
+<pre class="prettyprint source lang-javascript"><code>function setup() {
+  setupTouchSensor();
+}
+
+
+</code></pre>
+<h3>Motion Sensors</h3>
+<p>Set up motion sensors and access acceleration data:
+In addition to the acceleration data, you can also access gravity data, rotation data, and orientation data.
+It also provides a method to request permission to access motion sensors for iOS.</p>
+<pre class="prettyprint source lang-javascript"><code>function setup() {
+  createCanvas(400, 400);
+  setupMotionSensor();
+}
+
+function draw() {
+  background(220);
+  text(`Acceleration X: ${accelerationX}`, 10, 20);
+  text(`Acceleration Y: ${accelerationY}`, 10, 40);
+  text(`Acceleration Z: ${accelerationZ}`, 10, 60);
+  text(`Gravity X: ${gravityX}`, 10, 80);
+  text(`Gravity Y: ${gravityY}`, 10, 100);
+  text(`Gravity Z: ${gravityZ}`, 10, 120);
+  text(`Rotation X: ${rotationX}`, 10, 140);
+  text(`Rotation Y: ${rotationY}`, 10, 160);
+  text(`Rotation Z: ${rotationZ}`, 10, 180);
+  text(`Orientation X: ${orientationX}`, 10, 200);
+  text(`Orientation Y: ${orientationY}`, 10, 220);
+  text(`Orientation Z: ${orientationZ}`, 10, 240);
+  text(`Absolute Orientation X: ${absoluteOrientationX}`, 10, 260); //not supported by iOS
+  text(`Absolute Orientation Y: ${absoluteOrientationY}`, 10, 280); //not supported by iOS
+  text(`Absolute Orientation Z: ${absoluteOrientationZ}`, 10, 300); //not supported by iOS
+}
+</code></pre>
+<h3>Geolocation</h3>
+<p>Request the current geolocation of the device:</p>
+<pre class="prettyprint source lang-javascript"><code>function setup() {
+  let interval = 10000;
+  requestGeolocation(handleGeolocation, interval);
+}
+
+function handleGeolocation(position) {
+  console.log(`Latitude: ${position.coords.latitude}`);
+  console.log(`Longitude: ${position.coords.longitude}`);
+}
+</code></pre>
+<h3>Camera and Light Sensor</h3>
+<p>Capture color and brightness from the camera:</p>
+<pre class="prettyprint source lang-javascript"><code>function setup() {
+  setupCamera();
+}
+
+function draw() {
+  let color = captureColor();
+  let brightness = captureBrightness();
+  console.log(`Color: ${color}`);
+  console.log(`Brightness: ${brightness}`);
+}
+</code></pre>
+<h3>Sound Sensor</h3>
+<p>Capture the current sound level:</p>
+<pre class="prettyprint source lang-javascript"><code>let soundLevel = 0;
+
+function setup() {
+    createCanvas(400, 400);
+    let btn = createButton(&quot;Start Sound Sensor&quot;);
+    btn.mousePressed(setupSoundSensor);
+
+  }
+  
+  function draw() {
+    background(220);
+    if (isSoundSensorStarted()) {
+     soundLevel = getSoundLevel();
+    }
+
+    noStroke();
+    fill(0);
+    text(&quot;Sound Level: &quot; + soundLevel, 50, 50);
+
+    fill(30, 30, 185);
+    ellipse(width / 2, height / 2, 20+soundLevel * 500, 20+soundLevel * 500); 
+  }
+</code></pre>
+<h2>License</h2>
+<p>p5.sensor is licensed under the MIT License.</p></article>
+    </section>
+
 
 
 
@@ -50,13 +166,13 @@
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#captureBrightness">captureBrightness</a></li><li><a href="global.html#captureColor">captureColor</a></li><li><a href="global.html#captureLightLevel">captureLightLevel</a></li><li><a href="global.html#captureSoundLevel">captureSoundLevel</a></li><li><a href="global.html#getAccelerationWithGravity">getAccelerationWithGravity</a></li><li><a href="global.html#getGeolocation">getGeolocation</a></li><li><a href="global.html#initializeCamera">initializeCamera</a></li><li><a href="global.html#requestGeolocation">requestGeolocation</a></li><li><a href="global.html#setupCamera">setupCamera</a></li><li><a href="global.html#setupColorSensor">setupColorSensor</a></li><li><a href="global.html#setupLightSensor">setupLightSensor</a></li><li><a href="global.html#setupMotionSensor">setupMotionSensor</a></li><li><a href="global.html#setupSoundSensor">setupSoundSensor</a></li><li><a href="global.html#showGeolocationError">showGeolocationError</a></li><li><a href="global.html#toggleCamera">toggleCamera</a></li><li><a href="global.html#updateBrightness">updateBrightness</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Global</h3><ul><li><a href="global.html#captureBrightness">captureBrightness</a></li><li><a href="global.html#captureColor">captureColor</a></li><li><a href="global.html#captureLightLevel">captureLightLevel</a></li><li><a href="global.html#captureSoundLevel">captureSoundLevel</a></li><li><a href="global.html#debugMotion">debugMotion</a></li><li><a href="global.html#enablePinch">enablePinch</a></li><li><a href="global.html#enableSwipe">enableSwipe</a></li><li><a href="global.html#getAbsoluteOrientation">getAbsoluteOrientation</a></li><li><a href="global.html#getAcceleration">getAcceleration</a></li><li><a href="global.html#getAccelerationWithGravity">getAccelerationWithGravity</a></li><li><a href="global.html#getBrightness">getBrightness</a></li><li><a href="global.html#getColor">getColor</a></li><li><a href="global.html#getLightLevel">getLightLevel</a></li><li><a href="global.html#getOrientation">getOrientation</a></li><li><a href="global.html#getRotation">getRotation</a></li><li><a href="global.html#getSoundLevel">getSoundLevel</a></li><li><a href="global.html#initializeCamera">initializeCamera</a></li><li><a href="global.html#isFrontCamera">isFrontCamera</a></li><li><a href="global.html#isSensorPermissionGranted">isSensorPermissionGranted</a></li><li><a href="global.html#isSoundSensorStarted">isSoundSensorStarted</a></li><li><a href="global.html#requestGeolocation">requestGeolocation</a></li><li><a href="global.html#setupCamera">setupCamera</a></li><li><a href="global.html#setupColorSensor">setupColorSensor</a></li><li><a href="global.html#setupLightSensor">setupLightSensor</a></li><li><a href="global.html#setupMotionSensor">setupMotionSensor</a></li><li><a href="global.html#setupSoundSensor">setupSoundSensor</a></li><li><a href="global.html#setupTouchSensor">setupTouchSensor</a></li><li><a href="global.html#showGeolocationError">showGeolocationError</a></li><li><a href="global.html#toggleCamera">toggleCamera</a></li><li><a href="global.html#updateBrightness">updateBrightness</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 3.6.11</a> on Mon Feb 17 2025 15:57:27 GMT+0800 (Singapore Standard Time)
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.4</a> on Thu Mar 19 2026 22:45:24 GMT+0800 (Singapore Standard Time)
 </footer>
 
 <script> prettyPrint(); </script>
