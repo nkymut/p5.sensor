@@ -797,11 +797,29 @@ p5.prototype._micStarted = false;
  * @method setupSoundSensor
  */
 p5.prototype.setupSoundSensor = function() {
-    this.userStartAudio().then(() => {
-        this._mic = new p5.AudioIn();
-        this._mic.start();
-        this._micStarted = true;
-    });
+    const startMic = () => {
+        this.userStartAudio().then(() => {
+            this._mic = new p5.AudioIn();
+            this._mic.start();
+            this._micStarted = true;
+        }).catch((err) => {
+            console.warn("Sound sensor could not start:", err);
+        });
+    };
+
+    // Try immediately (works on desktop)
+    if (getAudioContext().state === 'running') {
+        startMic();
+    } else {
+        // On mobile, defer until first user gesture
+        const onUserGesture = () => {
+            startMic();
+            document.removeEventListener('touchstart', onUserGesture);
+            document.removeEventListener('mousedown', onUserGesture);
+        };
+        document.addEventListener('touchstart', onUserGesture, { once: true });
+        document.addEventListener('mousedown', onUserGesture, { once: true });
+    }
 };
 
 /**
@@ -816,9 +834,10 @@ p5.prototype.isSoundSensorStarted = function() {
 /**
  * Captures the current sound level.
  * @method captureSoundLevel
- * @return {number} The current sound level.
+ * @return {number} The current sound level, or 0 if the mic is not yet started.
  */
 p5.prototype.captureSoundLevel = function() {
+    if (!this._micStarted || !this._mic) return 0;
     return this._mic.getLevel();
 };
 
